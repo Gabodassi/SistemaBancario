@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: 24-Ago-2017 às 14:08
+-- Generation Time: 31-Ago-2017 às 14:11
 -- Versão do servidor: 10.1.19-MariaDB
 -- PHP Version: 7.0.13
 
@@ -40,7 +40,7 @@ CREATE TABLE `agencias` (
 --
 
 INSERT INTO `agencias` (`id`, `numero`, `nome`, `ativo`, `criado`, `modificado`) VALUES
-(1, '1216', 'Agência da lins', 1, '2017-08-24 08:50:59', '2017-08-24 08:50:59');
+(1, '1213', 'Lins', 1, '2017-08-24 12:03:10', '2017-08-24 12:03:10');
 
 -- --------------------------------------------------------
 
@@ -54,6 +54,54 @@ CREATE TABLE `caixas` (
   `ativo` tinyint(1) NOT NULL DEFAULT '1',
   `criado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modificado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `caixas_notas`
+--
+
+CREATE TABLE `caixas_notas` (
+  `id` int(11) NOT NULL,
+  `caixa_id` int(11) NOT NULL,
+  `valor` int(11) NOT NULL DEFAULT '0',
+  `quantidade` int(11) NOT NULL DEFAULT '0',
+  `ativo` tinyint(1) NOT NULL DEFAULT '1',
+  `criado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modificado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `contas`
+--
+
+CREATE TABLE `contas` (
+  `id` int(11) NOT NULL,
+  `agencia_id` int(11) NOT NULL,
+  `numero` varchar(255) NOT NULL,
+  `saldo` decimal(10,2) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `ativo` tinyint(1) NOT NULL DEFAULT '1',
+  `criado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modificado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `transacoes`
+--
+
+CREATE TABLE `transacoes` (
+  `id` int(11) NOT NULL,
+  `conta_id` int(11) NOT NULL,
+  `conta_destino_id` int(11) DEFAULT NULL,
+  `valor` decimal(10,2) NOT NULL,
+  `data` datetime NOT NULL,
+  `criado` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -79,7 +127,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `agencia_id`, `administrador`, `ativo`, `criado`, `modificado`) VALUES
-(1, 'Gabriel', 'Odassi', '1234', 1, 1, 1, '2017-08-24 08:51:49', '2017-08-24 08:51:49');
+(1, 'Paulo', 'Salvatore', '1234', 1, 1, 0, '2017-08-24 12:03:27', '2017-08-24 12:03:27');
 
 -- --------------------------------------------------------
 
@@ -92,13 +140,6 @@ CREATE TABLE `usuarios_login` (
   `usuario_id` int(11) NOT NULL,
   `data` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Extraindo dados da tabela `usuarios_login`
---
-
-INSERT INTO `usuarios_login` (`id`, `usuario_id`, `data`) VALUES
-(1, 1, '2017-08-24 08:53:08');
 
 --
 -- Indexes for dumped tables
@@ -116,6 +157,29 @@ ALTER TABLE `agencias`
 ALTER TABLE `caixas`
   ADD PRIMARY KEY (`id`),
   ADD KEY `agencia_id` (`agencia_id`);
+
+--
+-- Indexes for table `caixas_notas`
+--
+ALTER TABLE `caixas_notas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `caixa_id` (`caixa_id`);
+
+--
+-- Indexes for table `contas`
+--
+ALTER TABLE `contas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `agencia_id` (`agencia_id`),
+  ADD KEY `usuario_id` (`usuario_id`);
+
+--
+-- Indexes for table `transacoes`
+--
+ALTER TABLE `transacoes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `conta_id` (`conta_id`),
+  ADD KEY `conta_destino_id` (`conta_destino_id`);
 
 --
 -- Indexes for table `usuarios`
@@ -146,6 +210,21 @@ ALTER TABLE `agencias`
 ALTER TABLE `caixas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `caixas_notas`
+--
+ALTER TABLE `caixas_notas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `contas`
+--
+ALTER TABLE `contas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `transacoes`
+--
+ALTER TABLE `transacoes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -154,7 +233,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT for table `usuarios_login`
 --
 ALTER TABLE `usuarios_login`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- Constraints for dumped tables
 --
@@ -164,6 +243,26 @@ ALTER TABLE `usuarios_login`
 --
 ALTER TABLE `caixas`
   ADD CONSTRAINT `caixas_ibfk_1` FOREIGN KEY (`agencia_id`) REFERENCES `agencias` (`id`);
+
+--
+-- Limitadores para a tabela `caixas_notas`
+--
+ALTER TABLE `caixas_notas`
+  ADD CONSTRAINT `caixas_notas_ibfk_1` FOREIGN KEY (`caixa_id`) REFERENCES `caixas` (`id`);
+
+--
+-- Limitadores para a tabela `contas`
+--
+ALTER TABLE `contas`
+  ADD CONSTRAINT `contas_ibfk_1` FOREIGN KEY (`agencia_id`) REFERENCES `agencias` (`id`),
+  ADD CONSTRAINT `contas_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`);
+
+--
+-- Limitadores para a tabela `transacoes`
+--
+ALTER TABLE `transacoes`
+  ADD CONSTRAINT `transacoes_ibfk_1` FOREIGN KEY (`conta_id`) REFERENCES `contas` (`id`),
+  ADD CONSTRAINT `transacoes_ibfk_2` FOREIGN KEY (`conta_destino_id`) REFERENCES `contas` (`id`);
 
 --
 -- Limitadores para a tabela `usuarios`
